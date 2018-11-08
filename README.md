@@ -35,3 +35,15 @@ To stop all containers:
 ```
 docker-compose down
 ```
+
+## Known Issues
+
+Gallery layout doesn't work well in standard WP templates (e.g. Twety Seventeen
+theme). This can be fixed by introducing exception (override) of default CSS
+styles in customization section. Adding following lines should fix layout problems:
+```
+/* This is fix of gallery layout implemented by BSPostGallery plugin */
+.ReactGridGallery img {
+        max-width: initial
+}
+```

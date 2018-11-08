@@ -10,12 +10,15 @@ Text Domain: bspostgallery
 Domain Path: /languages
 */
 
-// Require additional code
-// require_once('bsmetabox.php');
-
+/*
+ * Implementation of BSPostGallery plugin
+ */
 class BSPostGallery
 {
+    // path to plugin in file system
     protected $pluginPath;
+
+    // url of the plugin
     protected $pluginUrl;
 
     public function __construct()
@@ -24,26 +27,25 @@ class BSPostGallery
         $this->pluginUrl = plugin_dir_url(__FILE__);
 
         add_action('init', array($this, 'onInit'));
-        //add_action('wp_enqueue_scripts',array($this, 'on_enqueue_scripts'));
         add_action('wp_footer', array($this, 'on_footer'));
-
     }
 
-    public function on_enqueue_scripts()
+    /*
+     * Called when rendering footer. Gallery scripts are inserted here
+     * to be sure all image definitions and gallery DOM node are already
+     * defined and rendered
+     */
+    public function on_footer()
     {
         wp_enqueue_script('1.chunk.js', $this->pluginUrl . 'js/1.chunk.js');
         wp_enqueue_script('main.chunk.js', $this->pluginUrl . 'js/main.chunk.js');
         wp_enqueue_script('runtime-main.js', $this->pluginUrl . 'js/runtime~main.js');
-    }
 
-    public function on_footer()
-    {
-        $this->on_enqueue_scripts();
     }
 
     public function onInit()
     {
-         // Remove the default gallery shortcode implementation
+        // Remove the default gallery shortcode implementation
         remove_shortcode( 'gallery' );
         // And replace it with our own!
         add_shortcode('gallery', array($this, 'gallery_shortcode'));
@@ -52,9 +54,9 @@ class BSPostGallery
     /**
     * The Gallery shortcode.
     *
-    * This has been taken verbatim from wp-includes/media.php. There's a lot of good stuff in there.
-    * All you want to do is add some more HTML to it, and since (for some reason) they didn't provide more
-    * filters to be able to add, we have to replace the Gallery shortcode wholesale.
+    * This has been inspired by wp-includes/media.php. We had to replace whole
+    * implementation of gallery shortcode since (for some reason) they didn't provide more
+    * filters to be able to add custom stuff.
     *
     * @param array $attr Attributes of the shortcode.
     * @return string HTML content to display gallery.
@@ -86,10 +88,6 @@ class BSPostGallery
             'order'      => 'ASC',
             'orderby'    => 'menu_order ID',
             'id'         => $post->ID,
-            'itemtag'    => 'dl',
-            'icontag'    => 'dt',
-            'captiontag' => 'dd',
-            'columns'    => 3,
             'size'       => 'thumbnail',
             'include'    => '',
             'exclude'    => '',
@@ -152,12 +150,6 @@ class BSPostGallery
             return $output;
         }
 
-        $itemtag = tag_escape($itemtag);
-        $captiontag = tag_escape($captiontag);
-        $columns = intval($columns);
-        $itemwidth = $columns > 0 ? floor(100/$columns) : 100;
-        $float = is_rtl() ? 'right' : 'left';
-
         $selector = "gallery-{$instance}";
 
         $gallery_style = $gallery_div = '';
@@ -170,10 +162,7 @@ class BSPostGallery
             </style>
             <!-- see gallery_shortcode() in wp-includes/media.php -->";
 
-        $size_class = sanitize_html_class( $size );
-        #$gallery_div = "<div id='$selector' class='gallery galleryid-{$id} gallery-columns-{$columns} gallery-size-{$size_class}'>";
-
-        $gallery_div2 = "<div id='$selector'/>";
+        $gallery_div = "<div id='$selector'/>";
 
         $output = "
             <!-- data for bs react gallery -->
@@ -184,17 +173,10 @@ class BSPostGallery
 
         foreach ($attachments as $id => $attachment)
         {
-            /*
-            $link = isset($attr['link']) && 'file' == $attr['link'] ?
-                wp_get_attachment_link($id, $size, false, false) :
-                wp_get_attachment_link($id, $size, true, false);
-             */
-
             $img_url = wp_get_attachment_url($id);
 
             $img = wp_get_attachment_image_src($id, 'medium');
 
-            // The DESCRIPTION, if we've not specified a blank 'descriptiontag'
             $img_description = '' . $attachment->post_content;
 
             $output .= "window.BSGALLERYIMAGES.push(
@@ -211,7 +193,7 @@ class BSPostGallery
             </script>
             <!-- data for bs react gallery -->';
 
-        $output .= apply_filters('gallery_style', $gallery_style . "\n\t\t" . $gallery_div2);
+        $output .= apply_filters('gallery_style', $gallery_style . "\n\t\t" . $gallery_div);
 
         return $output;
     }
