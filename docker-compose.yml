@@ -10,7 +10,7 @@ services:
     environment:
       WORDPRESS_DB_PASSWORD: example
     volumes:
-      - .:/var/www/html/wp-content/plugins/bsgallery
+      - .:/var/www/html/wp-content/plugins/bspostgallery
 
   mysql:
     image: mysql:5.7
