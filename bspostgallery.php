@@ -195,7 +195,7 @@ class BSPostGallery
             $img = wp_get_attachment_image_src($id, 'medium');
 
             // The DESCRIPTION, if we've not specified a blank 'descriptiontag'
-            $img_description = '' . wptexturize($attachment->post_content);
+            $img_description = '' . $attachment->post_content;
 
             $output .= "window.BSGALLERYIMAGES.push(
                 {
