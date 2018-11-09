@@ -37,10 +37,7 @@ class BSPostGallery
      */
     public function on_footer()
     {
-        wp_enqueue_script('1.chunk.js', $this->pluginUrl . 'js/1.chunk.js');
-        wp_enqueue_script('main.chunk.js', $this->pluginUrl . 'js/main.chunk.js');
-        wp_enqueue_script('runtime-main.js', $this->pluginUrl . 'js/runtime~main.js');
-
+        wp_enqueue_script('bsreactgallery.js', $this->pluginUrl . 'js/bsreactgallery.js');
     }
 
     public function onInit()
@@ -167,9 +164,14 @@ class BSPostGallery
         $output = "
             <!-- data for bs react gallery -->
             <script type='text/javascript'>
-                window.BSGALLERYNODEID = '$selector';
-                window.BSGALLERYIMAGES = [];";
+        ";
 
+        if ($instance == 1)
+        {
+            $output .= "window.BSPOSTGALLERY = []; var g = {};";
+        }
+
+        $output .= "g = {node: '$selector', images: []};";
 
         foreach ($attachments as $id => $attachment)
         {
@@ -179,7 +181,7 @@ class BSPostGallery
 
             $img_description = '' . $attachment->post_content;
 
-            $output .= "window.BSGALLERYIMAGES.push(
+            $output .= "g.images.push(
                 {
                     src: '$img_url',
                     thumbnail: '$img[0]',
@@ -190,6 +192,7 @@ class BSPostGallery
         }
 
         $output .= '
+                window.BSPOSTGALLERY.push(g);
             </script>
             <!-- data for bs react gallery -->';
 
