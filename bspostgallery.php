@@ -43,7 +43,7 @@ class BSPostGallery
     public function onInit()
     {
         // Remove the default gallery shortcode implementation
-        remove_shortcode( 'gallery' );
+        remove_shortcode('gallery');
         // And replace it with our own!
         add_shortcode('gallery', array($this, 'gallery_shortcode'));
     }
@@ -71,7 +71,7 @@ class BSPostGallery
             return $output;
         }
 
-        if (isset( $attr['orderby']))
+        if (isset($attr['orderby']))
         {
             $attr['orderby'] = sanitize_sql_orderby($attr['orderby']);
             if (!$attr['orderby'])
@@ -139,6 +139,8 @@ class BSPostGallery
         if (empty($attachments))
             return '';
 
+        // we have all attachments, let's start rendering html
+
         if (is_feed())
         {
             $output = "\n";
@@ -147,22 +149,26 @@ class BSPostGallery
             return $output;
         }
 
+        $output = '<!-- BEGIN ReactGallery -->';
+        $output .= '<!-- see gallery_shortcode() in wp-includes/media.php -->';
+
         $selector = "gallery-{$instance}";
 
-        $gallery_style = $gallery_div = '';
-        if (apply_filters('use_default_gallery_style', true))
-            $gallery_style = "
-            <style type='text/css'>
-                #{$selector} {
-                    margin: auto;
-                }
-            </style>
-            <!-- see gallery_shortcode() in wp-includes/media.php -->";
+        $output .= "
+        <!-- BEGIN react gallery style -->
 
-        $gallery_div = "<div id='$selector'/>";
+        <style type='text/css'>
+            #{$selector} {
+                margin: auto;
+            }
+            #{$selector} .ReactGridGallery {
+                overflow: hidden;
+            }
+        </style>
+        <!-- END react gallery style -->";
 
-        $output = "
-            <!-- data for bs react gallery -->
+        $output .= "
+            <!-- BEGIN data for bs react gallery -->
             <script type='text/javascript'>
         ";
 
@@ -194,9 +200,10 @@ class BSPostGallery
         $output .= '
                 window.BSPOSTGALLERY.push(g);
             </script>
-            <!-- data for bs react gallery -->';
-
-        $output .= apply_filters('gallery_style', $gallery_style . "\n\t\t" . $gallery_div);
+            <!-- END data for bs react gallery -->';
+        //
+        $output .= '<div id="' . $selector . '"></div>';
+        $output .= '<!-- END ReactGallery -->';
 
         return $output;
     }
